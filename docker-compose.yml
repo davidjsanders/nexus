@@ -43,7 +43,7 @@ services:
     # Reference: https://blog.mikesir87.io/2018/07/letting-traefik-run-on-worker-nodes/
     # Using socat allows the redirection of the docker sock and means only socat has
     # to run on managers
-    image: docker-registry.gwl.bz:18080/alpine/socat:1.0.3
+    image: socat:1.0.3
     command: tcp-listen:2375,fork,reuseaddr unix-connect:/var/run/docker.sock
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -56,7 +56,7 @@ services:
     # to run on managers. Here, traefik is running on any worker node and using the
     # swarm mesh to route traffic in.
     #
-    image: docker-registry.gwl.bz:18080/traefik:v1.7.7-alpine  # The official Traefik docker image
+    image: traefik:v1.7.7-alpine  # The official Traefik docker image
     volumes:
       - /Users/ll68385/Documents/dev/personal/cowbull/python_cowbull_webapp/config/traefik.toml:/etc/traefik/traefik.toml
     ports:
@@ -66,7 +66,7 @@ services:
       - nexus_net
       - management_net
   nexus3:
-    image: docker-registry.gwl.bz:18081/as/sde/docker-nexus-pro:dev-0.1
+    image: docker-nexus-pro:dev-0.1
     volumes:
       - nexus_pd:/nexus-data
       - nexus_ur:/userRoot
