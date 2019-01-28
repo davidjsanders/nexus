@@ -1,0 +1,101 @@
+# -------------------------------------------------------------------
+#
+# File:           docker-compose.yml
+# Project:        docker-nexus-pro
+# Stage:          ** DEVELOPMENT ONLY **
+#
+# Purpose:        The Docker compose file runs three images to stand-
+#                 up a Nexus Pro 3 container: 1) Socat, for redirecting
+#                 Docker's 2375 port, 2) Traefik, for reverse-proxying
+#                 the service; and 3) Nexus Pro. When run, the compose
+#                 serves on the following ports:
+#
+#                 1. Nexus UI on the server with the path nexus-dev/
+#                    For example, running on sscisapp9, the path to
+#                    access the UI would be http://sscisapp9/nexus-dev
+#                 2. Docker hub proxy registry served on a host
+#                    defined as docker-registry-dev.gwl.bz - note
+#                    to use this in development, an entry needs to be
+#                    mapped in /etc/hosts (or the Windows equiv.) to
+#                    the name.
+#                 2. Docker hub private registry served on a host
+#                    defined as docker-registry-private.gwl.bz - note
+#                    to use this in development, an entry needs to be
+#                    mapped in /etc/hosts (or the Windows equiv.) to
+#                    the name.
+#
+# Created on:     14 Jan 2019
+# Created by:     David Sanders
+# Creator email:  david.sanders@londonlife.com
+#
+# Image version:  n/a
+#
+# -------------------------------------------------------------------
+# Modifed On   | Modified By                 | Release Notes
+# -------------------------------------------------------------------
+# 14 Jan 2019  | David Sanders               | First release
+# -------------------------------------------------------------------
+
+version: '3.7'
+
+services:
+  socat:
+    # Reference: https://blog.mikesir87.io/2018/07/letting-traefik-run-on-worker-nodes/
+    # Using socat allows the redirection of the docker sock and means only socat has
+    # to run on managers
+    image: docker-registry.gwl.bz:18080/alpine/socat:1.0.3
+    command: tcp-listen:2375,fork,reuseaddr unix-connect:/var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - management_net
+      - nexus_net
+  traefik:
+    # Reference: https://blog.mikesir87.io/2018/07/letting-traefik-run-on-worker-nodes/
+    # Using socat allows the redirection of the docker sock and means only socat has
+    # to run on managers. Here, traefik is running on any worker node and using the
+    # swarm mesh to route traffic in.
+    #
+    image: docker-registry.gwl.bz:18080/traefik:v1.7.7-alpine  # The official Traefik docker image
+    volumes:
+      - /Users/ll68385/Documents/dev/personal/cowbull/python_cowbull_webapp/config/traefik.toml:/etc/traefik/traefik.toml
+    ports:
+      - "80:80"      # The HTTP port
+      - "8080:8080"  # The Web UI (enabled by --api)
+    networks:
+      - nexus_net
+      - management_net
+  nexus3:
+    image: docker-registry.gwl.bz:18081/as/sde/docker-nexus-pro:dev-0.1
+    volumes:
+      - nexus_pd:/nexus-data
+      - nexus_ur:/userRoot
+      - nexus_blobs:/blob-store
+      - ./config/nexus.properties:/nexus-data/etc/nexus.properties
+    environment:
+      - "INSTALL4J_ADD_VM_PARAMS=-Djava.util.prefs.userRoot=/userRoot"
+    labels:
+      traefik.entryPoints: http
+      traefik.enable: "true"
+      traefik.ui.docker.network: nexus_net
+      traefik.ui.backend: "nexus-ui"
+      traefik.ui.frontend.rule: "PathPrefix: /${nexus_prefix-nexus-dev}"
+      traefik.ui.port: 8081
+      traefik.registry.backend: "nexus-registry-dev"
+      traefik.registry.frontend.rule: "Host: docker-registry-dev.gwl.bz"
+      traefik.registry.port: 18080
+      traefik.prireg.backend: "reg-private"
+      traefik.prireg.frontend.rule: "Host: docker-registry-private.gwl.bz"
+      traefik.prireg.port: 18081
+    networks:
+      - nexus_net
+networks:
+  nexus_net:
+  management_net:
+volumes:
+  nexus_pd:
+    external: true
+  nexus_ur:
+    external: true
+  nexus_blobs:
+    external: true

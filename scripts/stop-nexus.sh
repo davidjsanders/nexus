@@ -1,0 +1,1 @@
+docker stop nexus_pro && docker rm nexus_pro

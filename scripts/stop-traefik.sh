@@ -1,0 +1,1 @@
+docker stop nexus_traefik && docker rm nexus_traefik
