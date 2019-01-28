@@ -79,13 +79,13 @@ services:
       traefik.enable: "true"
       traefik.ui.docker.network: nexus_net
       traefik.ui.backend: "nexus-ui"
-      traefik.ui.frontend.rule: "PathPrefix: /${nexus_prefix-nexus-dev}"
+      traefik.ui.frontend.rule: "PathPrefix: /${nexus_prefix-nexus}"
       traefik.ui.port: 8081
       traefik.registry.backend: "nexus-registry-dev"
-      traefik.registry.frontend.rule: "Host: docker-registry-dev.gwl.bz"
+      traefik.registry.frontend.rule: "Host: docker-registry-dev"
       traefik.registry.port: 18080
       traefik.prireg.backend: "reg-private"
-      traefik.prireg.frontend.rule: "Host: docker-registry-private.gwl.bz"
+      traefik.prireg.frontend.rule: "Host: docker-registry-private"
       traefik.prireg.port: 18081
     networks:
       - nexus_net
