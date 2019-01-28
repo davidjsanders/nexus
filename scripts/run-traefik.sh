@@ -8,4 +8,4 @@ docker run \
   -p 8080:8080 \
   --detach=true \
   --name nexus_traefik \
-  docker-registry.gwl.bz:18080/traefik:v1.7.7-alpine
+  traefik:v1.7.7-alpine

@@ -7,5 +7,5 @@ docker run \
   --privileged \
   --detach=true \
   --name nexus_socat \
-  docker-registry.gwl.bz:18080/alpine/socat:1.0.3 \
+  alpine/socat:1.0.3 \
     tcp-listen:2375,fork,reuseaddr unix-connect:/var/run/docker.sock

@@ -21,5 +21,5 @@ docker run \
   --label traefik.prireg.port=18081 \
   --detach=true \
   --name nexus_pro \
-  docker-registry.gwl.bz:18081/as/sde/docker-nexus-pro:dev-0.1
+  dsanderscan/nexus3:dev-0.1
   
